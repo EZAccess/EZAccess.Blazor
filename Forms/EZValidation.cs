@@ -7,6 +7,10 @@ public class EZValidation : ComponentBase
     [CascadingParameter]
     private EditContext? CurrentEditContext { get; set; }
 
+    /// <summary>
+    /// bla
+    /// </summary>
+    /// <exception cref="InvalidOperationException"></exception>
     protected override void OnInitialized()
     {
         if (CurrentEditContext is null)
