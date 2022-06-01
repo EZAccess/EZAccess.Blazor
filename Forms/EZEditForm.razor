@@ -14,7 +14,7 @@
             {
                 <EZEditFormSub TModel="TModel" Record="_record" >
                     <InputArea >
-                        @InputArea(context)
+                        @InputArea?(context)
                     </InputArea>
                 </EZEditFormSub>
             }
@@ -24,11 +24,22 @@
 
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
-    [Parameter] public RenderFragment<TModel> InputArea { get; set; }
+    [Parameter] public RenderFragment<TModel>? InputArea { get; set; }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (Recordset == null)
+        {
+            throw new InvalidOperationException($"The parameter {nameof(Recordset)} is required!");
+        }
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
 
     protected override void OnParametersSet()
     {
-        Recordset.AddOnChangeListeners(RefreshForm);
+        Recordset?.AddOnChangeListeners(RefreshForm);
         base.OnParametersSet();
     }
 
@@ -39,6 +50,6 @@
 
     public void Dispose()
     {
-        Recordset.RemoveOnChangeListeners(RefreshForm);
+        Recordset?.RemoveOnChangeListeners(RefreshForm);
     }
 }

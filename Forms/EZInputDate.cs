@@ -109,14 +109,9 @@ public class EZInputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         }
         builder.AddMultipleAttributes(4, AdditionalAttributes);
         builder.AddAttribute(5, "type", _typeAttributeValue);
-        if (!string.IsNullOrEmpty(CssClass))
-        {
-            builder.AddAttribute(6, "class", CssClass);
-        }
-        //        builder.AddAttributeIfNotNullOrEmpty(10, "class", CssClass);
+        builder.AddAttributeIfNotNullOrEmpty(6, "class", CssClass);
         builder.AddAttribute(7, "id", Id);
         builder.AddAttribute(8, "value", BindConverter.FormatValue(CurrentValueAsString));
-        //builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.AddAttribute(9, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.AddElementReferenceCapture(10, __inputReference => Element = __inputReference);
         builder.CloseElement();

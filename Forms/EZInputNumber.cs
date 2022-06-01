@@ -64,11 +64,7 @@ public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMember
         builder.AddAttribute(4, "step", _stepAttributeValue);
         builder.AddMultipleAttributes(5, AdditionalAttributes);
         builder.AddAttribute(6, "type", "text");
-        if (!string.IsNullOrEmpty(CssClass))
-        {
-            builder.AddAttribute(7, "class", CssClass);
-        }
-        //        builder.AddAttributeIfNotNullOrEmpty(10, "class", CssClass);
+        builder.AddAttributeIfNotNullOrEmpty(7, "class", CssClass);
         builder.AddAttribute(8, "id", Id);
         builder.AddAttribute(9, "value", BindConverter.FormatValue(CurrentValueAsString));
         //builder.AddAttribute(helper.Seq, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
