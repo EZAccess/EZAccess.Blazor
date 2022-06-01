@@ -1,0 +1,53 @@
+﻿@using System.Reflection
+@typeparam TModel
+
+@if (IsHeader)
+{
+    <th class="">@Header</th>
+}
+else
+{
+    <td class="">
+        @if (ChildContent == null) {
+            @Value
+        }
+        else {
+            @ChildContent
+        }
+    </td>
+}
+
+@code {
+    [CascadingParameter(Name = "DataContext")] public object? DataContext { get; set; }
+    [CascadingParameter(Name = "IsHeader")] public bool IsHeader { get; set; }
+
+    [Parameter, EditorRequired] public string Field { get; set; } = string.Empty;
+    [Parameter] public string? Header { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected string Value { get; set; } = string.Empty;
+    protected string? header;
+
+    protected override void OnInitialized()
+    {
+        Value = string.Empty;
+        EZField field = new(typeof(TModel), Field);
+        if (IsHeader) {
+            Header = Header ?? field.Display;
+        }
+        else
+        {
+            if (DataContext != null)
+            {
+                PropertyInfo? fieldData = DataContext.GetType().GetProperty(Field);
+                if (fieldData != null) {
+                    var value = fieldData.GetValue(DataContext);
+                    object value2 = value ?? string.Empty;
+                    Value = value2.ToString() ?? string.Empty;
+                }
+            }
+        }
+
+        base.OnInitialized();
+    }
+}

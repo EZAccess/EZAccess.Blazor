@@ -1,0 +1,75 @@
+﻿@using System.Reflection
+@using System.Linq.Expressions
+@typeparam TValue
+
+@if (targetType != null) {
+    <InputGroup Id="@Id" Label="@Label" >
+        @if (targetType.IsNumeric()) {
+            <EZInputNumber @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+        }
+        @if (targetType.IsDate()) {
+            <EZInputDate @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+        }
+        @if (targetType.IsBoolean()) {
+            <EZInputCheckbox @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+        }
+        @if (!targetType.IsNumeric() && !targetType.IsDate() && !targetType.IsBoolean()) {
+            <EZInputText @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+        }
+        @*<ValidationMessage For="@(() => _weatherForecast.Summary)" />*@
+    </InputGroup>
+}
+else {
+    <p>Error in @(this.GetType().Name)</p>
+}
+
+@code {
+    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
+    // The following 3 parameters and 1 property are required to make the databinding possible
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<TValue?>>? ValueExpression{ get; set; }
+    private TValue? BoundValue {
+        get => Value;
+        set => ValueChanged.InvokeAsync(value);
+    }
+
+    // Parameters to overrule default values
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool? Editable { get; set; }
+    [Parameter] public string? Field { get; set; }
+
+    // helper fields
+    private Type? targetType;
+    private string Id = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (CascadedEditContext == null) {
+            throw new InvalidOperationException($"{GetType()} requires a value for the 'CascadedEditContext' " +
+                "parameter. Normally this is provided automatically by the blazor EditForm as Cascading Parameter.");
+        }
+        if (Field == null && ValueExpression == null) {
+            throw new InvalidOperationException($"{GetType()} requires either an @bind-Value pameter or a value " + 
+                "for the 'Field' parameter ");
+        }
+        string fieldName = string.Empty;
+        if (ValueExpression == null)
+        {
+            fieldName = Field ?? string.Empty;            
+        }
+        else
+        {
+            fieldName = FieldIdentifier.Create(ValueExpression).FieldName;        
+        }
+        EZField field = new(CascadedEditContext.Model.GetType(), fieldName);
+        Label =  Label ?? field.Display;
+        Editable = ValueChanged.HasDelegate ? Editable ?? field.Editable : false;
+        targetType = typeof(TValue);
+        Id = field.FieldName;
+
+        base.OnInitialized();
+    }
+
+}

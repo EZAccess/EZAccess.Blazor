@@ -1,0 +1,247 @@
+﻿@using EZAccess.Data
+@implements IDisposable
+@typeparam TModel where TModel : new()
+@attribute [CascadingTypeParameter(nameof(TModel))]
+
+@if (Record == null || editContext == null)
+{
+    <p>Error...</p>
+}
+else {
+    <div class="row">
+        <EditForm id="@($"EditFormId{Record.GetHashCode()}")" class="w-100" EditContext="editContext" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <EZValidation @ref="ezValidation" />
+
+            <div class="d-flex flex-row">
+                <div class="mb-0 mr-3">
+                    <button type="button" class="btn btn-default h-100 rounded-0" style="width: 2.75rem;" data-toggle="dropdown" tabindex="-1">
+                        @if (Record.IsBusy)
+                        {
+                            <i class="fas fa-sync-alt fa-spin text-warning"></i>
+                        }
+                        else {
+                            @if (editContext.GetValidationMessages().Count() > 0)
+                            {
+                                <i class="fas fa-exclamation-circle text-danger"></i>
+                            }
+                            else
+                            {
+                                @if (Record.IsChanged)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    @if (Record.IsNewRecord)
+                                    {
+                                        <i class="fas fa-plus-circle text-info"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                    }
+                                }
+                            }
+                        }
+                    </button>
+                    <div class="dropdown-menu">
+                        @if (Record.IsChanged && !(editContext?.GetValidationMessages().Any() ?? false))
+                        {
+                            <button type="submit" form="@($"EditFormId{Record.GetHashCode()}")" class="dropdown-item">
+                                <i class="fas fa-cloud-upload-alt text-success" style="width: 2rem;"></i>
+                                <span>upload changes</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="dropdown-item" disabled>
+                                <i class="fas fa-cloud-upload-alt text-muted" style="width: 2rem;"></i>
+                                <span>upload changes</span>
+                            </button>
+                        }
+                        @if (Record.IsNewRecord)
+                        {
+                            <button type="button" class="dropdown-item" disabled>
+                                <i class="fas fa-undo text-muted" style="width: 2rem;"></i>
+                                <span>refresh data</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="dropdown-item" @onclick="RefreshData">
+                                <i class="fas fa-undo text-info" style="width: 2rem;"></i>
+                                @if (Record.IsChanged)
+                                {
+                                    <span>undo changes</span>
+                                }
+                                else
+                                {
+                                    <span>refresh data</span>
+                                }
+                            </button>
+                        }
+                        @if ((!Record.IsChanged && !Record.IsNewRecord) || (Record.IsNewRecord && Record.IsChanged))
+                        {
+                            <button type="button" class="dropdown-item" @onclick="DeleteRecord">
+                                <i class="fas fa-trash text-danger" style="width: 2rem;"></i>
+                                <span>delete item</span>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="dropdown-item" disabled>
+                                <i class="fas fa-trash text-muted" style="width: 2rem;"></i>
+                                <span>delete item</span>
+                            </button>
+                        }
+                        @if (editContext?.GetValidationMessages().Any() ?? false)
+                        {
+                            <hr class="dropdown-divider"/>
+                            @foreach(var message in editContext?.GetValidationMessages() ?? validationMessages)
+                            {
+                                <div class="dropdown-item-text text-danger">
+                                    <i class="fas fa-exclamation-triangle" style="width: 2rem;"></i>
+                                    <span>@message</span>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="col">
+                    
+                    @if (InputArea != null) {
+                        @if (editContext != null)
+                        {
+                            @InputArea(model)
+                        }
+                        else
+                        {
+                            @InputArea
+                        }
+                    }
+
+                </div>
+            </div>
+        </EditForm>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public EZRecord<TModel>? Record { get; set; }
+    [Parameter] public RenderFragment<TModel>? InputArea { get; set; }
+    private EditContext? editContext;
+    private List<string> validationMessages = new();
+    private EZValidation? ezValidation;
+    private EventHandler<TModel>? onAfterUpdate;
+    private EventHandler<string>? onCRUDError;
+    private EventHandler<EZRecordsetStateHasChangedEventArgs>? stateHasChanged;
+    private TModel model = new();
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (Record == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a valid parameter {nameof(Record)}");
+        }
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected override void OnParametersSet()
+    {
+        ResetEditContext();
+        base.OnParametersSet(); 
+    }
+
+    private void ResetEditContext()
+    {
+        if (Record != null)
+        {
+            bool editContextJustSet = false;
+            if (Record.Model == null)
+            {
+                throw new InvalidOperationException($"The parameter {nameof(Record)} must have a " +
+                    $"property {nameof(Record.Model)} which is not null.");
+            }
+            if (editContext == null)
+            {
+                model = Record.Model;
+                editContext = new(model);
+                editContext.SetFieldCssClassProvider(new FieldCssProvider());
+                editContextJustSet = true;
+            }
+            else
+            {
+                if (editContext.Model.GetHashCode() != Record.Model.GetHashCode())
+                {
+                    Dispose();
+                    model = Record.Model;
+                    editContext = new(model);
+                    editContext.SetFieldCssClassProvider(new FieldCssProvider());
+                    editContextJustSet = true;
+                }
+            }
+            if (editContext != null && editContextJustSet)
+            {
+                // wire up all the event listeners
+                editContext.OnFieldChanged += Record.OnFieldChanged;
+
+                onAfterUpdate = (s, d) => InvokeAsync(editContext.MarkAsUnmodified);
+                onCRUDError = (s, d) => InvokeAsync(() => {
+                    if (Record.ValidationErrors != null)
+                    {
+                        ezValidation?.DisplayErrors(Record.ValidationErrors);
+                        StateHasChanged();
+                    };
+                });
+                stateHasChanged = (s, a) => {
+                    if (editContext.Model.GetHashCode() != Record.Model.GetHashCode())
+                    {
+                        ResetEditContext();
+                    }
+                    InvokeAsync(StateHasChanged);
+                };
+
+                Record.OnAfterUpdate += onAfterUpdate;
+                Record.OnCRUDError += onCRUDError;
+                Record.StateHasChanged += stateHasChanged;
+            }
+        }
+    }
+
+
+    public void Dispose()
+    {
+        if (editContext != null && Record != null)
+        {
+            editContext.OnFieldChanged -= Record.OnFieldChanged;
+        }
+        if (Record != null)
+        {
+            if (Record.IsChanged) {
+                Record.SaveChanges();
+            }
+            Record.OnAfterUpdate -= onAfterUpdate;
+            Record.OnCRUDError -= onCRUDError;
+            Record.StateHasChanged -= stateHasChanged;
+
+        }
+    }
+
+    public void HandleValidSubmit()
+    {
+        Record?.SaveChanges();
+    }
+
+    public void RefreshData()
+    {
+        Record?.Refresh();
+    }
+
+    public void DeleteRecord()
+    {
+        Record?.Delete();
+    }
+
+}

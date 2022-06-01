@@ -1,0 +1,86 @@
+﻿@typeparam TModel where TModel: new()
+@attribute [CascadingTypeParameter(nameof(TModel))]
+
+@if (!forceRefresh)
+{
+    @if (DataList == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @if (ChildContent == null)
+        {
+            <p><em>There is nothing to display!</em></p>
+        }
+        else
+        {
+            <div class="table-responsive h-100" >
+                <table class="table @cssHover table-head-fixed text-nowrap">
+                    <thead>
+                        <tr>
+                            <CascadingValue Value="true" Name="IsHeader">
+                                @ChildContent(new TModel())
+                            </CascadingValue>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @*<Virtualize Items="DataList" Context="tuple">*@
+                        @foreach (var tuple in DataList)
+                        {
+                            <tr class="@(DataList.IndexOf(tuple) == currentIndex ? "table-primary" : string.Empty)" @onclick="(() => SelectTuple(tuple, DataList.IndexOf(tuple)))">
+                                <CascadingValue Value="@tuple" Name="DataContext">
+                                    <CascadingValue Value="false" Name="IsHeader">
+                                        @ChildContent(tuple)
+                                    </CascadingValue>
+                                </CascadingValue>
+                            </tr>
+                        }
+                        @*</Virtualize>*@
+                    </tbody>
+                </table>        
+            </div>
+        }
+
+    }
+}
+
+@code {
+    [Parameter] public List<TModel>? DataList { get; set; }
+    [Parameter, EditorRequired] public RenderFragment<TModel>? ChildContent { get; set; }
+    [Parameter] public EventCallback<TModel> SelectionChanged { get; set; }
+    [Parameter] public bool Interactief { get; set; } = true;
+
+    protected string cssActive = string.Empty;
+    protected int currentIndex = -1;
+    protected bool forceRefresh;
+    private string cssHover = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        if (Interactief)
+        {
+            cssHover = "table-hover";
+        }
+        base.OnInitialized();
+    }
+
+    protected void SelectTuple(TModel tuple, int index)
+    {
+        if (Interactief) {
+            currentIndex = index;
+            SelectionChanged.InvokeAsync(tuple);
+        }
+    }
+
+    public void Refresh(bool unselect)
+    {
+        if (unselect) {
+            currentIndex = -1;
+        }
+        forceRefresh = true;
+        StateHasChanged();
+        forceRefresh = false;
+        StateHasChanged();
+    }
+}

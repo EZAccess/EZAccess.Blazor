@@ -1,4 +1,4 @@
-﻿namespace TestEZAccessdata.Components;
+﻿namespace EZAccess.Blazor.Forms;
 
 public class EZValidation : ComponentBase
 {

@@ -1,0 +1,12 @@
+﻿<div class="form-group row">
+    <label class="col-sm-3 col-form-label" style="font-weight:normal" for="@Id" >@Label</label>
+    <div class="col-sm-8" >
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public string Id { get; set; } = string.Empty;
+}

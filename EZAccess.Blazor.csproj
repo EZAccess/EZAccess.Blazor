@@ -12,11 +12,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EZAccess.Data\EZAccess.Data.csproj" />
   </ItemGroup>
 
 </Project>
