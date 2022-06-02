@@ -1,4 +1,4 @@
-﻿@using System.Diagnostics.CodeAnalysis
+﻿@*@using System.Diagnostics.CodeAnalysis
 @using System.Globalization
 @using System.Linq.Expressions
 @typeparam TValue
@@ -12,9 +12,9 @@
 </div>
 *@
 
-<input autocomplete="off" type="text" @bind="CurrentValue" @bind:event="onchange" id="@Id" class="@CssClass" readonly="@(!Editable)" />
-
-@code {
+@*<input autocomplete="off" type="text" @bind="CurrentValue" @bind:event="onchange" id="@Id" class="@CssClass" readonly="@(!Editable)" />
+*@
+@*@code {
     [Parameter] public string? Id { get; set; }
     [Parameter] public bool Editable { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
@@ -56,3 +56,4 @@
         }    
     }
 }
+*@

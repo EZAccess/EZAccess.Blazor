@@ -8,13 +8,34 @@
     }
     else
     {
-        @foreach (var _record in Recordset.Records)
+        @if (ShowMultipleRecords)
         {
-            @if (_record != null)
+            @foreach (var _record in Recordset.Records)
             {
-                <EZEditFormSub TModel="TModel" Record="_record" >
+                @if (_record != null)
+                {
+                    <EZEditFormSub TModel="TModel" Record="_record" >
+                        <InputArea >
+                            @if (InputArea != null)
+                            {
+                                @InputArea(context)
+                            }
+                        </InputArea>
+                    </EZEditFormSub>
+                }
+
+            }
+        }
+        else
+        {
+            @if (Recordset.SelectedRecord != null)
+            {
+                <EZEditFormSub TModel="TModel" Record="Recordset.SelectedRecord" >
                     <InputArea >
-                        @InputArea?(context)
+                        @if (InputArea != null)
+                        {
+                            @InputArea(context)
+                        }
                     </InputArea>
                 </EZEditFormSub>
             }
@@ -25,6 +46,10 @@
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
     [Parameter] public RenderFragment<TModel>? InputArea { get; set; }
+    [Parameter] public bool? AllowAdditions { get; set; } 
+    [Parameter] public bool? AllowEditions { get; set; }
+    [Parameter] public bool ManualAdditions { get; set; }
+    [Parameter] public bool ShowMultipleRecords { get; set; }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -33,6 +58,8 @@
         {
             throw new InvalidOperationException($"The parameter {nameof(Recordset)} is required!");
         }
+        AllowEditions = Recordset.IsReadOnly ? false : AllowEditions ??= !Recordset.IsReadOnly;
+        AllowAdditions = Recordset.IsReadOnly ? false : AllowAdditions ??= !Recordset.IsReadOnly;
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
