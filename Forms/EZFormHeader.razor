@@ -1,0 +1,110 @@
+﻿@implements IDisposable
+@typeparam TModel where TModel : new()
+@attribute [CascadingTypeParameter(nameof(TModel))]
+
+<div class="column mb-3">
+    @if (Recordset == null)
+    {
+        <p>The parameter '@nameof(Recordset)' is missing!</p>
+    }
+    else{
+        <div class="d-inline-flex">
+            <div class="btn-group mr-3">
+                <button class="btn btn-default" @onclick="RefreshData">
+                    <i class="fas fa-undo text-info mr-1"></i>
+                    <span>Refresh</span>
+                </button>
+                @if (_showUploadButton)
+                {
+                    @if (Recordset.ChangedRecordsCount == 0)
+                    {
+                        <button class="btn btn-default" title="1 record(s) are not valid!" disabled>
+                            <i class="fas fa-cloud-upload-alt text-muted mr-1" />
+                            <span>Upload changes</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-default" title="1 record(s) are not valid!" @onclick="SaveAllChanges">
+                            @if (Recordset.ChangedRecordsCount > 0)
+                            {
+                                <span class="position-absolute badge badge-danger badge-pill" style="left: 1.3rem">@Recordset.ChangedRecordsCount</span>
+                            }
+                            <i class="fas fa-cloud-upload-alt text-success mr-1" />
+                            <span>Upload changes</span>
+                        </button>
+                    }
+                }
+                @if (_showInsertButton)
+                {
+                    <button class="btn btn-default">
+                        <i class="fas fa-plus text-warning mr-1" />
+                        <span>Insert record</span>
+                    </button>
+                }
+            </div>
+        </div>
+        
+        <div class="d-inline-flex">
+            <div class="input-group mr-3">
+                <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-default">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-inline-flex">
+            <div class="input-group mr-3 w-100">
+                <input type="text" readonly class="form-control-plaintext" value="@Recordset.ErrorMessage">
+            </div>
+        </div>
+
+    }
+</div>
+
+
+@code {
+    [CascadingParameter(Name = "Recordset")] public EZRecordset<TModel>? Recordset { get; set; }
+    [Parameter] public bool? ShowUploadButton { get; set; }
+    [Parameter] public bool? ShowInsertButton { get; set; }
+
+    private bool _showUploadButton;
+    private bool _showInsertButton;
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        _showUploadButton = true;
+        _showInsertButton = true;
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    private void SaveAllChanges()
+    {
+        Recordset?.SaveAllChanges();
+    }
+
+    private void RefreshData()
+    {
+        Recordset?.StartRefreshData();
+    }
+
+    protected override void OnParametersSet()
+    {
+        Recordset?.AddOnChangeListeners(RefreshHeader);
+        base.OnParametersSet();
+    }
+
+    public void RefreshHeader()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Recordset?.RemoveOnChangeListeners(RefreshHeader);
+    }
+}

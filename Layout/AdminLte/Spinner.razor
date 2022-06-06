@@ -1,0 +1,8 @@
+﻿<div class="w-100 text-center py-3 bg-light">
+    <i class="fas fa-3x fa-sync-alt fa-spin text-secondary"></i>
+    <div class="text-bold pt-2 text-secondary">@ChildContent</div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
