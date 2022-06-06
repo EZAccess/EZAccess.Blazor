@@ -1,6 +1,6 @@
 ﻿@implements IDisposable
-@typeparam TModel where TModel : new()
 @attribute [CascadingTypeParameter(nameof(TModel))]
+@typeparam TModel where TModel : new()
 
 
 @if(Recordset == null)
@@ -10,13 +10,6 @@
 else
 {
     <CascadingValue Value="Recordset" Name="Recordset">
-        <div class="row">
-            @*This is the header section of the component. If no parameter is given use the default.*@ 
-            @if (@HeaderSection != null)
-            {
-                @HeaderSection
-            }
-        </div>
         @*This is the data section. Display the content of the recordsset*@
         @if (Recordset.Data == null || Recordset.IsBusy)
         {
@@ -31,12 +24,10 @@ else
                     @if (_record != null)
                     {
                         <EZEditFormSub TModel="TModel" Record="_record" >
-                            <InputArea >
-                                @if (InputSection != null)
-                                {
-                                    @InputSection(context)
-                                }
-                            </InputArea>
+                            @if (ChildContent != null)
+                            {
+                                @ChildContent(context)
+                            }
                         </EZEditFormSub>
                     }
 
@@ -48,33 +39,22 @@ else
                 @if (Recordset.SelectedRecord != null)
                 {
                     <EZEditFormSub TModel="TModel" Record="Recordset.SelectedRecord" >
-                        <InputArea >
-                            @if (InputSection != null)
-                            {
-                                @InputSection(context)
-                            }
-                        </InputArea>
+                        @if (ChildContent != null)
+                        {
+                            @ChildContent(context)
+                        }
                     </EZEditFormSub>
                 }
 
             }
         }
-        <div class="row">
-            @*This is the footer section of the component. If no parameter is given use the default.*@
-            @if (FooterSection != null)
-            {
-                @FooterSection
-            }
-        </div>
     </CascadingValue>        
 }
 
 
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
-    [Parameter] public RenderFragment? HeaderSection { get; set; }
-    [Parameter] public RenderFragment<TModel>? InputSection { get; set; }
-    [Parameter] public RenderFragment? FooterSection { get; set; }
+    [Parameter] public RenderFragment<TModel>? ChildContent { get; set; }
     [Parameter] public bool? AllowAdditions { get; set; } 
     [Parameter] public bool? AllowEditions { get; set; }
     [Parameter] public bool ManualAdditions { get; set; }

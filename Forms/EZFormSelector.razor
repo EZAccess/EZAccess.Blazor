@@ -1,5 +1,153 @@
-﻿<h3>EZFormSelector</h3>
+﻿@using EZAccess.Data
+@typeparam TModel where TModel : new()
+
+@if (Record == null || CascadedEditContext == null)
+{
+    <p>Error...</p>
+}
+else {
+    <div class="d-flex flex-row">
+        <div class="mb-0 mr-3">
+            <button type="button" class="btn btn-default h-100 rounded-0" style="width: 2.75rem;" data-toggle="dropdown" tabindex="-1">
+                @if (Record.IsBusy)
+                {
+                    <i class="fas fa-sync-alt fa-spin text-warning"></i>
+                }
+                else {
+                    @if (CascadedEditContext.GetValidationMessages().Count() > 0)
+                    {
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                    }
+                    else
+                    {
+                        @if (Record.IsChanged)
+                        {
+                            <i class="fas fa-check-circle text-success"></i>
+                        }
+                        else
+                        {
+                            @if (Record.IsNewRecord)
+                            {
+                                <i class="fas fa-plus-circle text-info"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-chevron-circle-right text-secondary"></i>
+                            }
+                        }
+                    }
+                }
+            </button>
+            <div class="dropdown-menu">
+                @if (Record.IsChanged && !(CascadedEditContext?.GetValidationMessages().Any() ?? false))
+                {
+                    <button type="submit" form="@($"EditFormId{Record.GetHashCode()}")" class="dropdown-item">
+                        <i class="fas fa-cloud-upload-alt text-success" style="width: 2rem;"></i>
+                        <span>upload changes</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="dropdown-item" disabled>
+                        <i class="fas fa-cloud-upload-alt text-muted" style="width: 2rem;"></i>
+                        <span>upload changes</span>
+                    </button>
+                }
+                @if (Record.IsNewRecord)
+                {
+                    <button type="button" class="dropdown-item" disabled>
+                        <i class="fas fa-undo text-muted" style="width: 2rem;"></i>
+                        <span>refresh data</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="dropdown-item" @onclick="RefreshData">
+                        <i class="fas fa-undo text-info" style="width: 2rem;"></i>
+                        @if (Record.IsChanged)
+                        {
+                            <span>undo changes</span>
+                        }
+                        else
+                        {
+                            <span>refresh data</span>
+                        }
+                    </button>
+                }
+                @if ((!Record.IsChanged && !Record.IsNewRecord) || (Record.IsNewRecord && Record.IsChanged))
+                {
+                    <button type="button" class="dropdown-item" @onclick="DeleteRecord">
+                        <i class="fas fa-trash text-danger" style="width: 2rem;"></i>
+                        <span>delete item</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="dropdown-item" disabled>
+                        <i class="fas fa-trash text-muted" style="width: 2rem;"></i>
+                        <span>delete item</span>
+                    </button>
+                }
+                @if (CascadedEditContext?.GetValidationMessages().Any() ?? false)
+                {
+                    <hr class="dropdown-divider"/>
+                    @foreach(var message in CascadedEditContext?.GetValidationMessages() ?? new List<string>())
+                    {
+                        <div class="dropdown-item-text text-danger">
+                            <i class="fas fa-exclamation-triangle" style="width: 2rem;"></i>
+                            <span>@message</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="col">
+                    
+            @if (ChildContent != null) {
+                @ChildContent
+            }
+
+        </div>
+    </div>
+}
 
 @code {
+    [CascadingParameter(Name = "CascadedRecord")] private EZRecord<TModel>? Record { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (Record == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a valid parameter {nameof(Record)}");
+        }
+        if (CascadedEditContext == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a valid parameter {nameof(CascadedEditContext)}");
+        }
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet(); 
+    }
+
+    public void HandleValidSubmit()
+    {
+        Record?.SaveChanges();
+    }
+
+    public void RefreshData()
+    {
+        Record?.Refresh();
+    }
+
+    public void DeleteRecord()
+    {
+        Record?.Delete();
+    }
 
 }
