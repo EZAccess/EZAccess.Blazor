@@ -22,7 +22,8 @@ else {
                     {
                         @if (Record.IsChanged)
                         {
-                            <i class="fas fa-check-circle text-success"></i>
+                            <i class="fas fa-exclamation-circle text-warning"></i>
+                            @*<i class="fas fa-check-circle text-success"></i>*@
                         }
                         else
                         {
@@ -32,7 +33,14 @@ else {
                             }
                             else
                             {
-                                <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                @if (Record.IsSaved)
+                                {
+                                    <i class="fas fa-check-circle text-success"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                }
                             }
                         }
                     }

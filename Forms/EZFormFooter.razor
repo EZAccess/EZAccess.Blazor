@@ -1,41 +1,48 @@
 ﻿@implements IDisposable
-@typeparam TModel where TModel : new()
 @attribute [CascadingTypeParameter(nameof(TModel))]
+@typeparam TModel where TModel : new()
 
-<div class="column mb-3">
-    @if (Recordset == null)
-    {
-        <p>The parameter '@nameof(Recordset)' is missing!</p>
-    }
-    else
-    {
-        <div class="d-inline-flex">
-            <div class="input-group">
-                <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
-                <div class="input-group-append">
-                    <button type="button" class="btn btn-default">
-                        <i class="fas fa-search"></i>
-                    </button>
+<div class="row">
+    <div class="column mb-3">
+        @if (Recordset == null)
+        {
+            <p>The parameter '@nameof(Recordset)' is missing!</p>
+        }
+        else
+        {
+            <div class="d-inline-flex mr-3">
+                <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                        <button type="button" class="btn btn-default">
+                            <i class="fas fa-caret-left"></i>
+                        </button>
+                    </div>
+                    <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
+                    <div class="input-group-append">
+                        <button type="button" class="btn btn-default">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button type="button" class="btn btn-default">
+                            <i class="fas fa-caret-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+            <div class="d-inline-flex mr-3">This is a mockup only</div>
+        }
+    </div>
 </div>
 
-
 @code {
-    [CascadingParameter(Name = "Recordset")] public EZRecordset<TModel>? Recordset { get; set; }
-//    [Parameter] public bool? ShowUploadButton { get; set; }
-//    [Parameter] public bool? ShowInsertButton { get; set; }
-
-//    private bool _showUploadButton;
-//    private bool _showInsertButton;
+    [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-//        _showUploadButton = true;
-//        _showInsertButton = true;
+        if (Recordset == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a {nameof(Recordset)} parameter!");
+        }
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
@@ -45,7 +52,7 @@
         base.OnParametersSet();
     }
 
-    public void RefreshFooter()
+    public void RefreshFooter(object sender)
     {
         InvokeAsync(StateHasChanged);
     }

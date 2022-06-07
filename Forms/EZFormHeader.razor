@@ -37,14 +37,31 @@
                     }
                     @if (_showInsertButton)
                     {
-                        <button class="btn btn-default">
-                            <i class="fas fa-plus text-warning mr-1" />
+                        <button class="btn btn-default" @onclick="InsertRecord">
+                            <i class="fas fa-plus text-info mr-1" />
                             <span>Insert record</span>
                         </button>
+                    }
+                    @if (_showOptions)
+                    {
+                        <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <i class="fa fa-cog"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item-text">
+                                <div class="form-group mb-0">
+                                    <div class="custom-control custom-switch">
+                                        <input class="custom-control-input" type="checkbox" id="@($"AutoSaveCheckbox{this.GetHashCode}")" @bind-value="@(Recordset.SaveChangesAutomatic)">
+                                        <label class="custom-control-label form-check-label" for="@($"AutoSaveCheckbox{this.GetHashCode}")" >Autosave</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     }
                 </div>
             </div>
         
+            <!--
             <div class="d-inline-flex">
                 <div class="input-group mr-3">
                     <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
@@ -55,6 +72,7 @@
                     </div>
                 </div>
             </div>
+            -->
 
             <div class="d-inline-flex">
                 <div class="input-group mr-3 w-100">
@@ -70,21 +88,33 @@
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
     [Parameter] public bool? ShowUploadButton { get; set; }
     [Parameter] public bool? ShowInsertButton { get; set; }
+    [Parameter] public bool? ShowOptions { get; set; }
 
     private bool _showUploadButton;
     private bool _showInsertButton;
+    private bool _showOptions;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-        _showUploadButton = true;
-        _showInsertButton = true;
+        if (Recordset == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires an {nameof(Recordset)} parameter!");
+        }
+        _showUploadButton = Recordset.IsReadOnly ? false: ShowUploadButton ?? true;
+        _showInsertButton = Recordset.IsReadOnly ? false: ShowInsertButton ?? true;
+        _showOptions = Recordset.IsReadOnly ? false: ShowOptions ?? true;
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
     private void SaveAllChanges()
     {
         Recordset?.SaveAllChanges();
+    }
+
+    private void InsertRecord()
+    {
+        Recordset?.TryAddNewRecord();
     }
 
     private void RefreshData()
@@ -98,7 +128,7 @@
         base.OnParametersSet();
     }
 
-    public void RefreshHeader()
+    public void RefreshHeader(object sender)
     {
         InvokeAsync(StateHasChanged);
     }

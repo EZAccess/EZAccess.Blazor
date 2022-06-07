@@ -116,9 +116,12 @@ else {
         }
         if (Record != null)
         {
-            if (Record.IsChanged) {
-                Record.SaveChanges();
-            }
+            // Intention is to save changes automaticaly, but this has some unexpected 
+            // side effects. There are certain senario's where this is not allowed. Until 
+            // this is better thought through the feature is on hold.
+            ///if (Record.IsChanged) {
+            //    Record.SaveChanges();
+            //}
             Record.OnAfterUpdate -= onAfterUpdate;
             Record.OnCRUDError -= onCRUDError;
             Record.StateHasChanged -= stateHasChanged;
