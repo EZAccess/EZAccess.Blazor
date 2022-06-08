@@ -76,7 +76,7 @@ else {
             if (editContext != null && editContextJustSet)
             {
                 // wire up all the event listeners
-                editContext.OnFieldChanged += Record.OnFieldChanged;
+                editContext.OnFieldChanged += OnFieldChanged;
                 editContext.OnValidationStateChanged += OnValidationStateChanged;
                 onAfterUpdate = (s, d) => InvokeAsync(editContext.MarkAsUnmodified);
                 onCRUDError = (s, d) => InvokeAsync(() => {
@@ -101,6 +101,11 @@ else {
         }
     }
 
+    public void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
+    {
+        Record?.OnFieldChanged(eventArgs.FieldIdentifier.FieldName);
+    }
+
     public void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs args)
     {
         Record?.OnValidationStateChanged(editContext?.GetValidationMessages());
@@ -111,7 +116,7 @@ else {
     {
         if (editContext != null && Record != null)
         {
-            editContext.OnFieldChanged -= Record.OnFieldChanged;
+            editContext.OnFieldChanged -= OnFieldChanged;
             editContext.OnValidationStateChanged -= OnValidationStateChanged;
         }
         if (Record != null)
