@@ -28,7 +28,7 @@ else {
     private EZValidation? ezValidation;
     private EventHandler<TModel>? onAfterUpdate;
     private EventHandler<string>? onCRUDError;
-    private EventHandler<EZRecordsetStateHasChangedEventArgs>? stateHasChanged;
+    private EventHandler<EZStateHasChangedEventArgs>? stateHasChanged;
     //private TModel model = new();
 
     public override async Task SetParametersAsync(ParameterView parameters)
