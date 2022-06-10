@@ -8,7 +8,7 @@
 else {
     <div class="d-flex flex-row">
         <div class="mb-0 mr-3">
-            <button type="button" class="btn btn-default h-100 rounded-0" style="width: 2.75rem;" data-toggle="dropdown" tabindex="-1">
+            <button type="button" class="btn btn-default h-100 rounded-0" style="width: 2.75rem;" data-toggle="dropdown" tabindex="-1" @onfocus="OnFocus">
                 @if (Record.IsBusy)
                 {
                     <i class="fas fa-sync-alt fa-spin text-warning"></i>
@@ -35,11 +35,25 @@ else {
                             {
                                 @if (Record.IsSaved)
                                 {
-                                    <i class="fas fa-check-circle text-success"></i>
+                                    @if (Record.HasFocus)
+                                    {
+                                        <i class="fas fa-chevron-circle-right text-success"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    }
                                 }
                                 else
                                 {
-                                    <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                    @if (Record.HasFocus)
+                                    {
+                                        <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                    }
+                                    else
+                                    {
+                                        @*<i class="fas fa-circle text-secondary"></i>*@
+                                    }
                                 }
                             }
                         }
@@ -158,4 +172,8 @@ else {
         Record?.Delete();
     }
 
+    public void OnFocus()
+    {
+        Record?.SetFocus(true);
+    }
 }

@@ -36,9 +36,9 @@ else
             }
             else
             {
-                @if (Recordset.SelectedRecord != null)
+                @if (Recordset.CurrentRecord != null)
                 {
-                    <EZEditFormSub TModel="TModel" Record="Recordset.SelectedRecord" >
+                    <EZEditFormSub TModel="TModel" Record="Recordset.CurrentRecord" >
                         @if (ChildContent != null)
                         {
                             @ChildContent(context)
@@ -67,8 +67,8 @@ else
         {
             throw new InvalidOperationException($"The parameter {nameof(Recordset)} is required!");
         }
-        AllowEditions = Recordset.IsReadOnly ? false : AllowEditions ??= !Recordset.IsReadOnly;
-        AllowAdditions = Recordset.IsReadOnly ? false : AllowAdditions ??= !Recordset.IsReadOnly;
+        AllowEditions = Recordset.AllowUpdate ? true : AllowEditions ??= Recordset.AllowUpdate;
+        AllowAdditions = Recordset.AllowCreate ? true : AllowAdditions ??= Recordset.AllowCreate;
         return base.SetParametersAsync(ParameterView.Empty);
     }
 

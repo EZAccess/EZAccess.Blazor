@@ -2,21 +2,24 @@
 @using System.Linq.Expressions
 @typeparam TValue
 
-@if (targetType != null) {
+@if (targetType != null) 
+{
     <InputGroup Id="@Id" Label="@Label" >
-        @if (targetType.IsNumeric()) {
-            <EZInputNumber @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+        @switch (elementType)
+        {
+            case "number":
+                <EZInputNumber @ref="inputNumber" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                break;
+            case "date":
+                <EZInputDate @ref="inputDate" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                break;
+            case "checkbox":
+                <EZInputCheckbox @ref="inputCheckbox" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                break;
+            default:
+                <EZInputText @ref="inputText" @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                break;
         }
-        @if (targetType.IsDate()) {
-            <EZInputDate @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
-        }
-        @if (targetType.IsBoolean()) {
-            <EZInputCheckbox @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
-        }
-        @if (!targetType.IsNumeric() && !targetType.IsDate() && !targetType.IsBoolean()) {
-            <EZInputText @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
-        }
-        @*<ValidationMessage For="@(() => _weatherForecast.Summary)" />*@
     </InputGroup>
 }
 else {
@@ -25,6 +28,8 @@ else {
 
 @code {
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
+    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
+    [CascadingParameter(Name = "inputHasFocus")] private EZInPutHasFocus? inputHasFocus { get; set; }
 
     // The following 3 parameters and 1 property are required to make the databinding possible
     [Parameter] public TValue? Value { get; set; }
@@ -39,10 +44,15 @@ else {
     [Parameter] public string? Label { get; set; }
     [Parameter] public bool? Editable { get; set; }
     [Parameter] public string? Field { get; set; }
-
+    [Parameter] public bool FirstFocus { get; set; }
     // helper fields
     private Type? targetType;
     private string Id = string.Empty;
+    private EZInputNumber<TValue?>? inputNumber;
+    private EZInputDate<TValue?>? inputDate;
+    private EZInputCheckbox<TValue?>? inputCheckbox;
+    private EZInputText<TValue?>? inputText;
+    private string? elementType;
 
     protected override void OnInitialized()
     {
@@ -68,8 +78,41 @@ else {
         Editable = ValueChanged.HasDelegate ? Editable ?? field.Editable : false;
         targetType = typeof(TValue);
         Id = field.FieldName;
-
+        elementType = targetType.IsNumeric() ? "number" : elementType;
+        elementType = targetType.IsDate() ? "date" : elementType;
+        elementType = targetType.IsBoolean() ? "checkbox" : elementType;
+        elementType ??= "text";
         base.OnInitialized();
     }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (FirstFocus && inputHasFocus is not null)
+        {
+            if (inputHasFocus.Input.Id is null)
+            {
+                switch (elementType)
+                {
+                    case "number":
+                        inputHasFocus.Input = inputNumber?.Element ?? new();
+                        break;
+                    case "date":
+                        inputHasFocus.Input = inputDate?.Element ?? new();
+                        break;
+                    case "checkbox":
+                        inputHasFocus.Input = inputCheckbox?.Element ?? new();
+                        break;
+                    default:
+                        inputHasFocus.Input = inputText?.Element ?? new();
+                        break;
+                }
+            }
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private void OnFocus()
+    {
+        ActionOnFocus?.Invoke(false);
+    }
 }

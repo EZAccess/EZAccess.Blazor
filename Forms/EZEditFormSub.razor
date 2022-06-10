@@ -1,4 +1,5 @@
 ﻿@using EZAccess.Data
+@using System.ComponentModel
 @implements IDisposable
 @typeparam TModel where TModel : new()
 
@@ -11,10 +12,14 @@ else {
         <EditForm id="@($"EditFormId{Record.GetHashCode()}")" class="w-100" EditContext="editContext" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
             <EZValidation @ref="ezValidation" />
-            <CascadingValue Value="Record" Name="CascadedRecord">
-                @if (ChildContent != null && editContext != null) {
-                    @ChildContent((TModel)editContext.Model)
-                }
+            <CascadingValue Value="@Record" Name="CascadedRecord">
+                <CascadingValue Value="@setFocus" Name="ActionOnFocus">
+                    <CascadingValue Value="@inputHasFocus" Name="inputHasFocus" >
+                        @if (ChildContent != null && editContext != null) {
+                            @ChildContent((TModel)editContext.Model)
+                        }
+                    </CascadingValue>
+                </CascadingValue>
             </CascadingValue>
         </EditForm>
     </div>
@@ -24,12 +29,13 @@ else {
     [Parameter, EditorRequired] public EZRecord<TModel>? Record { get; set; }
     [Parameter] public RenderFragment<TModel>? ChildContent { get; set; }
     private EditContext? editContext;
-    //private List<string> validationMessages = new();
     private EZValidation? ezValidation;
     private EventHandler<TModel>? onAfterUpdate;
     private EventHandler<string>? onCRUDError;
     private EventHandler<EZStateHasChangedEventArgs>? stateHasChanged;
-    //private TModel model = new();
+    private EventHandler<bool>? onFocus;
+    private Action<bool>? setFocus;
+    private EZInPutHasFocus inputHasFocus = new();
 
     public override async Task SetParametersAsync(ParameterView parameters)
     {
@@ -38,6 +44,7 @@ else {
         {
             throw new InvalidOperationException($"{GetType()} requires a valid parameter {nameof(Record)}");
         }
+        setFocus = OnSetFocus;
         await base.SetParametersAsync(ParameterView.Empty);
     }
 
@@ -79,25 +86,36 @@ else {
                 editContext.OnFieldChanged += OnFieldChanged;
                 editContext.OnValidationStateChanged += OnValidationStateChanged;
                 onAfterUpdate = (s, d) => InvokeAsync(editContext.MarkAsUnmodified);
-                onCRUDError = (s, d) => InvokeAsync(() => {
+                onCRUDError = (s, d) => InvokeAsync(() => 
+                {
                     if (Record.ValidationErrors != null)
                     {
                         ezValidation?.DisplayErrors(Record.ValidationErrors);
                         StateHasChanged();
                     };
                 });
-                stateHasChanged = (s, a) => {
+                stateHasChanged = (s, a) => 
+                {
                     if (editContext.Model.GetHashCode() != Record.Model.GetHashCode())
                     {
                         ResetEditContext();
                     }
                     InvokeAsync(StateHasChanged);
                 };
+                onFocus = (s, byProgram) =>
+                {
+                    if (byProgram)
+                    {
+                        InvokeAsync(async () => await inputHasFocus.Input.FocusAsync());
+                    }
+                };
 
                 Record.OnAfterUpdate += onAfterUpdate;
                 Record.OnCRUDError += onCRUDError;
                 Record.StateHasChanged += stateHasChanged;
+                Record.OnFocus += onFocus;
             }
+            inputHasFocus.PropertyChanged += OnFocusFieldSet;
         }
     }
 
@@ -111,6 +129,26 @@ else {
         Record?.OnValidationStateChanged(editContext?.GetValidationMessages());
     }
 
+    public void OnSetFocus(bool byProgram)
+    {
+        if (!Record?.HasFocus ?? false)
+        {
+            Record?.SetFocus(byProgram);
+        }
+    }
+
+    public void OnFocusFieldSet(object? sender, PropertyChangedEventArgs args)
+    {
+        SetFocusToField();
+    }
+
+    private void SetFocusToField()
+    {
+        if (Record is null) return;
+        if (!Record.HasFocus) return;
+        if (inputHasFocus.Input.Id is null) return;
+        inputHasFocus.Input.FocusAsync();
+    }
 
     public void Dispose()
     {
@@ -130,8 +168,9 @@ else {
             Record.OnAfterUpdate -= onAfterUpdate;
             Record.OnCRUDError -= onCRUDError;
             Record.StateHasChanged -= stateHasChanged;
-
+            Record.OnFocus -= onFocus;
         }
+        inputHasFocus.PropertyChanged -= OnFocusFieldSet;
     }
 
     public void HandleValidSubmit()

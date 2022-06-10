@@ -18,14 +18,14 @@
                     {
                         @if (Recordset.ChangedRecordsCount == 0)
                         {
-                            <button class="btn btn-default" title="1 record(s) are not valid!" disabled>
+                            <button class="btn btn-default" >
                                 <i class="fas fa-cloud-upload-alt text-muted mr-1" />
                                 <span>Upload changes</span>
                             </button>
                         }
                         else
                         {
-                            <button class="btn btn-default" title="@(Recordset.InvalidRecordsCount > 0 ? $"{Recordset.InvalidRecordsCount} record(s) are not valid!" : string.Empty)" @onclick="SaveAllChanges">
+                            <button class="btn btn-default" title="@(Recordset.InvalidRecordsCount > 0 ? (Recordset.InvalidRecordsCount == 1 ? "1 record is not valid" : $"{Recordset.InvalidRecordsCount} records are not valid!") : string.Empty)" @onclick="SaveAllChanges">
                                 @if (Recordset.ChangedRecordsCount > 0)
                                 {
                                     <span class="@($"position-absolute badge badge-{(Recordset.InvalidRecordsCount > 0 ? "danger" : "warning")} badge-pill")" style="left: 1.3rem">@Recordset.ChangedRecordsCount</span>
@@ -101,9 +101,9 @@
         {
             throw new InvalidOperationException($"{GetType()} requires an {nameof(Recordset)} parameter!");
         }
-        _showUploadButton = Recordset.IsReadOnly ? false: ShowUploadButton ?? true;
-        _showInsertButton = Recordset.IsReadOnly ? false: ShowInsertButton ?? true;
-        _showOptions = Recordset.IsReadOnly ? false: ShowOptions ?? true;
+        _showUploadButton = !Recordset.AllowUpdate ? false: ShowUploadButton ?? true;
+        _showInsertButton = !Recordset.AllowCreate ? false: ShowInsertButton ?? true;
+        _showOptions = !Recordset.AllowUpdate ? false: ShowOptions ?? true;
         return base.SetParametersAsync(ParameterView.Empty);
     }
 
@@ -114,7 +114,7 @@
 
     private void InsertRecord()
     {
-        Recordset?.TryAddNewRecord();
+        Recordset?.FocusOrAddNewRecord();
     }
 
     private void RefreshData()

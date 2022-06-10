@@ -13,28 +13,34 @@
             <div class="d-inline-flex mr-3">
                 <div class="input-group input-group-sm">
                     <div class="input-group-prepend">
-                        <button type="button" class="btn btn-default">
+                        <button type="button" class="btn btn-default" @onclick="SelectFirst">
+                            <i class="fas fa-backward"></i>
+                        </button>
+                        <button type="button" class="btn btn-default" @onclick="SelectPrevious">
                             <i class="fas fa-caret-left"></i>
                         </button>
                     </div>
-                    <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
+                    <input @bind-value="@index" @onkeyup="OnKeyPress" type="search" class="form-control" style="width: 7rem;" placeholder="Goto record" >
                     <div class="input-group-append">
-                        <button type="button" class="btn btn-default">
+                        <button type="button" class="btn btn-default" @onclick="GoToRecord" >
                             <i class="fas fa-search"></i>
                         </button>
-                        <button type="button" class="btn btn-default">
+                        <button type="button" class="btn btn-default" @onclick="SelectNext">
                             <i class="fas fa-caret-right"></i>
+                        </button>
+                        <button type="button" class="btn btn-default" @onclick="SelectLast">
+                            <i class="fas fa-forward"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="d-inline-flex mr-3">This is a mockup only</div>
         }
     </div>
 </div>
 
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
+    private int index;
 
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -54,7 +60,41 @@
 
     public void RefreshFooter(object sender)
     {
+        index = Recordset?.CurrentIndex ?? 0;
         InvokeAsync(StateHasChanged);
+    }
+
+    public void SelectFirst()
+    {
+        Recordset?.SelectFirst();
+    }
+
+    public void SelectPrevious()
+    {
+        Recordset?.SelectPrevious();
+    }
+
+    public void SelectNext()
+    {
+        Recordset?.SelectNext();
+    }
+
+    public void SelectLast()
+    {
+        Recordset?.SelectLast();
+    }
+
+    public void GoToRecord()
+    {
+        Recordset?.GoToRecord(index);
+    }
+
+    public void OnKeyPress(KeyboardEventArgs args)
+    {
+        if (args.Code == "Enter")
+        {
+            GoToRecord();
+        }
     }
 
     public void Dispose()
