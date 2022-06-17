@@ -1,15 +1,15 @@
 ﻿@implements IDisposable
 @typeparam TModel where TModel : new()
 
-<div class="row">
-    <div class="column mb-3">
+<div class="@($"row {CssClass}")">
+    <div class="column">
         @if (Recordset == null)
         {
             <p>The parameter '@nameof(Recordset)' is missing!</p>
         }
         else{
             <div class="d-inline-flex">
-                <div class="btn-group mr-3">
+                <div class="btn-group btn-group-sm mr-3">
                     <button class="btn btn-default" @onclick="RefreshData">
                         <i class="fas fa-undo text-info mr-1"></i>
                         <span>Refresh</span>
@@ -50,7 +50,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-item-text">
                                 <div class="form-group mb-0">
-                                    <div class="custom-control custom-switch">
+                                    <div class="custom-control custom-switch form-control-sm">
                                         <input class="custom-control-input" type="checkbox" id="@($"AutoSaveCheckbox{this.GetHashCode}")" @bind-value="@(Recordset.SaveChangesAutomatic)">
                                         <label class="custom-control-label form-check-label" for="@($"AutoSaveCheckbox{this.GetHashCode}")" >Autosave</label>
                                     </div>
@@ -89,6 +89,7 @@
     [Parameter] public bool? ShowUploadButton { get; set; }
     [Parameter] public bool? ShowInsertButton { get; set; }
     [Parameter] public bool? ShowOptions { get; set; }
+    [Parameter] public string CssClass { get; set; } = string.Empty;
 
     private bool _showUploadButton;
     private bool _showInsertButton;

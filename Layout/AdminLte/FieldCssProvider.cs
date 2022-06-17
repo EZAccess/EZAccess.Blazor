@@ -8,11 +8,11 @@ public class FieldCssProvider : FieldCssClassProvider
 
         if (editContext.IsModified(fieldIdentifier))
         {
-            return isValid ? "form-control is-valid" : "form-control is-invalid";
+            return isValid ? "form-control form-control-sm is-valid" : "form-control form-control-sm is-invalid";
         }
         else
         {
-            return isValid ? "form-control" : "form-control is-invalid";
+            return isValid ? "form-control form-control-sm" : "form-control form-control-sm is-invalid";
         }
     }
 }

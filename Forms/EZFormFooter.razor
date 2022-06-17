@@ -2,8 +2,8 @@
 @attribute [CascadingTypeParameter(nameof(TModel))]
 @typeparam TModel where TModel : new()
 
-<div class="row">
-    <div class="column mb-3">
+<div class="@($"row {CssClass}")">
+    <div class="column">
         @if (Recordset == null)
         {
             <p>The parameter '@nameof(Recordset)' is missing!</p>
@@ -40,6 +40,7 @@
 
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
+    [Parameter] public string CssClass { get; set; } = string.Empty;
     private int index;
 
     public override Task SetParametersAsync(ParameterView parameters)

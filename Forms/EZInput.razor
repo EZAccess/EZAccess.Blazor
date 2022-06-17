@@ -29,7 +29,7 @@ else {
 @code {
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
     [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
-    [CascadingParameter(Name = "inputHasFocus")] private EZInPutHasFocus? inputHasFocus { get; set; }
+    [CascadingParameter(Name = "inputHasFocus")] private EZInputHasFocus? inputHasFocus { get; set; }
 
     // The following 3 parameters and 1 property are required to make the databinding possible
     [Parameter] public TValue? Value { get; set; }

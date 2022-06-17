@@ -4,6 +4,16 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Authors>Gideon ter Maat</Authors>
+    <Company>EZAccess.nl</Company>
+    <Description>Library with essential Blazor component for editing data, such as an enhanced EditForm and Datagrid for editing data.</Description>
+    <Copyright>2022 EZAccess.nl</Copyright>
+    <RepositoryUrl>https://github.com/EZAccess/EZAccess.Blazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Blazor; EditForm; EZEditForm; EZForm; Datagrid</PackageTags>
+    <PackageReleaseNotes>Initial release with EditForm ready to use</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 
@@ -12,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="7.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.5" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.5" />
