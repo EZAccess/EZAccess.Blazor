@@ -8,120 +8,129 @@
 else {
     <div class="d-flex flex-row">
         <div class="mb-0 mr-3">
-            <button type="button" class="btn btn-default h-100 rounded-0 p-0" style="width: 2rem;" data-toggle="dropdown" tabindex="-1" @onfocus="OnFocus">
-                @if (Record.IsBusy)
-                {
-                    <i class="fas fa-sync-alt fa-spin text-warning"></i>
-                }
-                else {
-                    @if (CascadedEditContext.GetValidationMessages().Count() > 0)
+            @if (!Record.DeleteRequested){
+                <button type="button" class="btn btn-default h-100 rounded-0 p-0" style="width: 2rem;" data-toggle="dropdown" tabindex="-1" @onfocus="OnFocus">
+                    @if (Record.IsBusy)
                     {
-                        <i class="fas fa-exclamation-circle text-danger"></i>
+                        <i class="fas fa-sync-alt fa-spin text-warning"></i>
                     }
-                    else
-                    {
-                        @if (Record.IsChanged)
+                    else {
+                        @if (CascadedEditContext.GetValidationMessages().Count() > 0)
                         {
-                            <i class="fas fa-exclamation-circle text-warning"></i>
-                            @*<i class="fas fa-check-circle text-success"></i>*@
+                            <i class="fas fa-exclamation-circle text-danger"></i>
                         }
                         else
                         {
-                            @if (Record.IsNewRecord)
+                            @if (Record.IsChanged)
                             {
-                                <i class="fas fa-plus-circle text-info"></i>
+                                <i class="fas fa-exclamation-circle text-warning"></i>
+                                @*<i class="fas fa-check-circle text-success"></i>*@
                             }
                             else
                             {
-                                @if (Record.IsSaved)
+                                @if (Record.IsNewRecord)
                                 {
-                                    @if (Record.HasFocus)
-                                    {
-                                        <i class="fas fa-chevron-circle-right text-success"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="fas fa-check-circle text-success"></i>
-                                    }
+                                    <i class="fas fa-plus-circle text-info"></i>
                                 }
                                 else
                                 {
-                                    @if (Record.HasFocus)
+                                    @if (Record.IsSaved)
                                     {
-                                        <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                        @if (Record.HasFocus)
+                                        {
+                                            <i class="fas fa-chevron-circle-right text-success"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        }
                                     }
                                     else
                                     {
-                                        @*<i class="fas fa-circle text-secondary"></i>*@
+                                        @if (Record.HasFocus)
+                                        {
+                                            <i class="fas fa-chevron-circle-right text-secondary"></i>
+                                        }
+                                        else
+                                        {
+                                            @*<i class="fas fa-circle text-secondary"></i>*@
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-            </button>
-            <div class="dropdown-menu">
-                @if (Record.IsChanged && !(CascadedEditContext?.GetValidationMessages().Any() ?? false))
-                {
-                    <button type="submit" form="@($"EditFormId{Record.GetHashCode()}")" class="dropdown-item">
-                        <i class="fas fa-cloud-upload-alt text-success" style="width: 2rem;"></i>
-                        <span>upload changes</span>
-                    </button>
-                }
-                else
-                {
-                    <button type="button" class="dropdown-item" disabled>
-                        <i class="fas fa-cloud-upload-alt text-muted" style="width: 2rem;"></i>
-                        <span>upload changes</span>
-                    </button>
-                }
-                @if (Record.IsNewRecord)
-                {
-                    <button type="button" class="dropdown-item" disabled>
-                        <i class="fas fa-undo text-muted" style="width: 2rem;"></i>
-                        <span>refresh data</span>
-                    </button>
-                }
-                else
-                {
-                    <button type="button" class="dropdown-item" @onclick="RefreshData">
-                        <i class="fas fa-undo text-info" style="width: 2rem;"></i>
-                        @if (Record.IsChanged)
-                        {
-                            <span>undo changes</span>
-                        }
-                        else
-                        {
-                            <span>refresh data</span>
-                        }
-                    </button>
-                }
-                @if ((!Record.IsChanged && !Record.IsNewRecord) || (Record.IsNewRecord && Record.IsChanged))
-                {
-                    <button type="button" class="dropdown-item" @onclick="DeleteRecord">
-                        <i class="fas fa-trash text-danger" style="width: 2rem;"></i>
-                        <span>delete item</span>
-                    </button>
-                }
-                else
-                {
-                    <button type="button" class="dropdown-item" disabled>
-                        <i class="fas fa-trash text-muted" style="width: 2rem;"></i>
-                        <span>delete item</span>
-                    </button>
-                }
-                @if (CascadedEditContext?.GetValidationMessages().Any() ?? false)
-                {
-                    <hr class="dropdown-divider"/>
-                    @foreach(var message in CascadedEditContext?.GetValidationMessages() ?? new List<string>())
+                </button>
+                <div class="dropdown-menu">
+                    @if (Record.IsChanged && !(CascadedEditContext?.GetValidationMessages().Any() ?? false))
                     {
-                        <div class="dropdown-item-text text-danger">
-                            <i class="fas fa-exclamation-triangle" style="width: 2rem;"></i>
-                            <span>@message</span>
-                        </div>
+                        <button type="submit" form="@($"EditFormId{Record.GetHashCode()}")" class="dropdown-item">
+                            <i class="fas fa-cloud-upload-alt text-success" style="width: 2rem;"></i>
+                            <span>upload changes</span>
+                        </button>
                     }
-                }
-            </div>
+                    else
+                    {
+                        <button type="button" class="dropdown-item" disabled>
+                            <i class="fas fa-cloud-upload-alt text-muted" style="width: 2rem;"></i>
+                            <span>upload changes</span>
+                        </button>
+                    }
+                    @if (Record.IsNewRecord)
+                    {
+                        <button type="button" class="dropdown-item" disabled>
+                            <i class="fas fa-undo text-muted" style="width: 2rem;"></i>
+                            <span>refresh data</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="dropdown-item" @onclick="RefreshData">
+                            <i class="fas fa-undo text-info" style="width: 2rem;"></i>
+                            @if (Record.IsChanged)
+                            {
+                                <span>undo changes</span>
+                            }
+                            else
+                            {
+                                <span>refresh data</span>
+                            }
+                        </button>
+                    }
+                    @if ((!Record.IsChanged && !Record.IsNewRecord) || (Record.IsNewRecord && Record.IsChanged))
+                    {
+                        <button type="button" class="dropdown-item" @onclick="RequestDeleteRecord">
+                            <i class="fas fa-trash text-danger" style="width: 2rem;"></i>
+                            <span>delete item</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="dropdown-item" disabled>
+                            <i class="fas fa-trash text-muted" style="width: 2rem;"></i>
+                            <span>delete item</span>
+                        </button>
+                    }
+                    @if (CascadedEditContext?.GetValidationMessages().Any() ?? false)
+                    {
+                        <hr class="dropdown-divider"/>
+                        @foreach(var message in CascadedEditContext?.GetValidationMessages() ?? new List<string>())
+                        {
+                            <div class="dropdown-item-text text-danger">
+                                <i class="fas fa-exclamation-triangle" style="width: 2rem;"></i>
+                                <span>@message</span>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            @if (Record.DeleteRequested)
+            {
+                <div class="border border-danger bg-white h-100 rounded-0 p-2" tabindex="-1" @onfocus="OnFocus">
+                    <button type="button" class="btn btn-sm btn-danger" @onclick="DeleteRecord" >Delete</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="CancelDeleteRecord" >Cancel</button>
+                </div>
+            }
         </div>
         <div class="col">
                     
@@ -165,6 +174,16 @@ else {
     public void RefreshData()
     {
         Record?.Refresh();
+    }
+
+    public void RequestDeleteRecord()
+    {
+        Record?.RequestDelete();
+    }
+
+    public void CancelDeleteRecord()
+    {
+        Record?.CancelDelete();
     }
 
     public void DeleteRecord()
