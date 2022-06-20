@@ -15,6 +15,8 @@ namespace EZAccess.Blazor.Forms;
 /// </summary>
 public class EZInputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue?>
 {
+    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
+
     private const string DateFormat = "yyyy-MM-dd";                     // Compatible with HTML 'date' inputs
     private const string DateTimeLocalFormat = "yyyy-MM-ddTHH:mm:ss";   // Compatible with HTML 'datetime-local' inputs
     private const string MonthFormat = "yyyy-MM";                       // Compatible with HTML 'month' inputs
@@ -113,7 +115,8 @@ public class EZInputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         builder.AddAttribute(7, "id", Id);
         builder.AddAttribute(8, "value", BindConverter.FormatValue(CurrentValueAsString));
         builder.AddAttribute(9, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-        builder.AddElementReferenceCapture(10, __inputReference => Element = __inputReference);
+        builder.AddAttribute(10, "onfocus", EventCallback.Factory.Create(this, OnFocus));
+        builder.AddElementReferenceCapture(11, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 
@@ -143,4 +146,10 @@ public class EZInputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
             return false;
         }
     }
+
+    private void OnFocus()
+    {
+        ActionOnFocus?.Invoke(false);
+    }
+
 }

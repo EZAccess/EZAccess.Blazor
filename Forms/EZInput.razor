@@ -8,16 +8,26 @@
         @switch (elementType)
         {
             case "number":
-                <EZInputNumber @ref="inputNumber" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                <EZInputNumber @ref="inputNumber" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
                 break;
             case "date":
-                <EZInputDate @ref="inputDate" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                <EZInputDate @ref="inputDate" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
                 break;
             case "checkbox":
-                <EZInputCheckbox @ref="inputCheckbox" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                <EZInputCheckbox @ref="inputCheckbox" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+                break;
+            case "enum":
+                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" >
+                    <EZInputOptionsEnum EnumType="@typeof(TValue)" />
+                </EZInputSelect>
+                break;
+            case "select":
+                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" >
+                    @ChildContent
+                </EZInputSelect>
                 break;
             default:
-                <EZInputText @ref="inputText" @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" @onfocus="OnFocus" />
+                <EZInputText @ref="inputText" @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
                 break;
         }
     </InputGroup>
@@ -28,7 +38,6 @@ else {
 
 @code {
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
-    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [CascadingParameter(Name = "inputHasFocus")] private EZInputHasFocus? inputHasFocus { get; set; }
 
     // The following 3 parameters and 1 property are required to make the databinding possible
@@ -39,6 +48,9 @@ else {
         get => Value;
         set => ValueChanged.InvokeAsync(value);
     }
+
+    // Childcontent if applicable
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     // Parameters to overrule default values
     [Parameter] public string? Label { get; set; }
@@ -52,17 +64,19 @@ else {
     private EZInputDate<TValue?>? inputDate;
     private EZInputCheckbox<TValue?>? inputCheckbox;
     private EZInputText<TValue?>? inputText;
+    private EZInputSelect<TValue?>? inputSelect;
     private string? elementType;
 
     protected override void OnInitialized()
     {
         if (CascadedEditContext == null) {
-            throw new InvalidOperationException($"{GetType()} requires a value for the 'CascadedEditContext' " +
-                "parameter. Normally this is provided automatically by the blazor EditForm as Cascading Parameter.");
+            throw new InvalidOperationException($"{GetType()} requires a value for the " +
+                "'CascadedEditContext' parameter. Normally this is provided automatically " +
+                "by the blazor EditForm as Cascading Parameter.");
         }
         if (Field == null && ValueExpression == null) {
-            throw new InvalidOperationException($"{GetType()} requires either an @bind-Value pameter or a value " + 
-                "for the 'Field' parameter ");
+            throw new InvalidOperationException($"{GetType()} requires either an @bind-Value " +
+                "pameter or a value for the 'Field' parameter ");
         }
         string fieldName = string.Empty;
         if (ValueExpression == null)
@@ -78,10 +92,20 @@ else {
         Editable = ValueChanged.HasDelegate ? Editable ?? field.Editable : false;
         targetType = typeof(TValue);
         Id = field.FieldName;
-        elementType = targetType.IsNumeric() ? "number" : elementType;
-        elementType = targetType.IsDate() ? "date" : elementType;
-        elementType = targetType.IsBoolean() ? "checkbox" : elementType;
-        elementType ??= "text";
+        // when the childcontent is not null asume the content should be displayed as 
+        // a select input type
+        if (ChildContent is null)
+        {
+            elementType = targetType.IsEnum ? "enum" : elementType;
+            elementType = targetType.IsNumeric() ? "number" : elementType;
+            elementType = targetType.IsDate() ? "date" : elementType;
+            elementType = targetType.IsBoolean() ? "checkbox" : elementType;
+            elementType ??= "text";
+        }
+        else
+        {
+            elementType = "select";
+        }
         base.OnInitialized();
     }
 
@@ -102,6 +126,9 @@ else {
                     case "checkbox":
                         inputHasFocus.Input = inputCheckbox?.Element ?? new();
                         break;
+                    case "enum":
+                        inputHasFocus.Input = inputSelect?.Element ?? new();
+                        break;
                     default:
                         inputHasFocus.Input = inputText?.Element ?? new();
                         break;
@@ -111,8 +138,8 @@ else {
         base.OnAfterRender(firstRender);
     }
 
-    private void OnFocus()
-    {
-        ActionOnFocus?.Invoke(false);
-    }
+    //private void OnFocus()
+    //{
+    //    ActionOnFocus?.Invoke(false);
+    //}
 }

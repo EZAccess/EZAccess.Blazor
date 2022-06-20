@@ -12,6 +12,7 @@ namespace EZAccess.Blazor.Forms;
 /// </summary>
 public class EZInputCheckbox<TValue> : InputBase<TValue?>
 {
+    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
     [Parameter] public string? Id { get; set; }
     [Parameter] public bool Editable { get; set; }
@@ -57,7 +58,8 @@ public class EZInputCheckbox<TValue> : InputBase<TValue?>
         builder.AddAttribute(5, "id", Id);
         builder.AddAttribute(6, "checked", BindConverter.FormatValue(CurrentValue));
         builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder(this, __value => CurrentValue = __value, CurrentValue));
-        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
+        builder.AddAttribute(8, "onfocus", EventCallback.Factory.Create(this, OnFocus));
+        builder.AddElementReferenceCapture(9, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 
@@ -68,4 +70,10 @@ public class EZInputCheckbox<TValue> : InputBase<TValue?>
     }
     //protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
     //    => throw new NotSupportedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
+
+    private void OnFocus()
+    {
+        ActionOnFocus?.Invoke(false);
+    }
+
 }

@@ -14,6 +14,8 @@ namespace EZAccess.Blazor.Forms;
 /// </summary>
 public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue?>
 {
+    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
+
     private static readonly string _stepAttributeValue = GetStepAttributeValue();
 
     private static string GetStepAttributeValue()
@@ -69,7 +71,8 @@ public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMember
         builder.AddAttribute(9, "value", BindConverter.FormatValue(CurrentValueAsString));
         //builder.AddAttribute(helper.Seq, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.AddAttribute(10, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-        builder.AddElementReferenceCapture(11, __inputReference => Element = __inputReference);
+        builder.AddAttribute(11, "onfocus", EventCallback.Factory.Create(this, OnFocus));
+        builder.AddElementReferenceCapture(12, __inputReference => Element = __inputReference);
 
         builder.CloseElement();
 
@@ -144,4 +147,10 @@ public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMember
                 throw new InvalidOperationException($"Unsupported type {value.GetType()}");
         }
     }
+
+    private void OnFocus()
+    {
+        ActionOnFocus?.Invoke(false);
+    }
+
 }

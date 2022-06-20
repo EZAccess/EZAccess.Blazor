@@ -23,6 +23,7 @@ namespace EZAccess.Blazor.Forms;
 /// </summary>
 public class EZInputText<TValue> : InputBase<TValue?>
 {
+    [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [Parameter] public string? Id { get; set; }
     [Parameter] public bool Editable { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
@@ -68,7 +69,8 @@ public class EZInputText<TValue> : InputBase<TValue?>
         builder.AddAttribute(5, "id", Id);
         builder.AddAttribute(6, "value", BindConverter.FormatValue(CurrentValue));
         builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
+        builder.AddAttribute(8, "onfocus", EventCallback.Factory.Create(this, OnFocus));
+        builder.AddElementReferenceCapture(9, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
     //<input autocomplete="off" type="text" @bind="CurrentValue" @bind:event="onchange" id="@Id" class="@CssClass" readonly="@(!Editable)" />
@@ -93,4 +95,10 @@ public class EZInputText<TValue> : InputBase<TValue?>
             return false;
         }
     }
+
+    private void OnFocus()
+    {
+        ActionOnFocus?.Invoke(false);
+    }
+
 }
