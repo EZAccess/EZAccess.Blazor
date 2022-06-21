@@ -17,7 +17,7 @@
         else
         {
             <div class="table-responsive h-100" >
-                <table class="table @cssHover table-sm table-head-fixed text-nowrap" style="font-size: 0.80rem">
+                <table class="table @cssHover table-sm table-head-fixed text-nowrap" style="font-size: 0.85rem">
                     <CascadingValue Value="Recordset?.Fields" Name="FieldInfo">
                         <thead>
                             <tr>
@@ -65,10 +65,6 @@
         if (DataList is null && Recordset is null)
         {
             throw new InvalidOperationException("The parameters DataList or Recordset need to be supplied.");
-        }
-        if (DataList is not null && Recordset is not null)
-        {
-            throw new InvalidOperationException("The parameters DataList or Recordset need to be supplied. Not both.");
         }
         base.OnParametersSet();
     }
