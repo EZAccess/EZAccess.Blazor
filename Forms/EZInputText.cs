@@ -25,7 +25,7 @@ public class EZInputText<TValue> : InputBase<TValue?>
 {
     [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [Parameter] public string? Id { get; set; }
-    [Parameter] public bool Editable { get; set; }
+    [Parameter] public bool AllowEdit { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
     protected string ParsingErrorMessage { get; set; } = "The {0} field must be text.";
 
@@ -60,7 +60,7 @@ public class EZInputText<TValue> : InputBase<TValue?>
     {
         builder.OpenElement(0, "input");
         builder.AddAttribute(1, "autocomplete", "off");
-        if (!Editable)
+        if (!AllowEdit)
         {
             builder.AddAttribute(2, "readonly");
         }

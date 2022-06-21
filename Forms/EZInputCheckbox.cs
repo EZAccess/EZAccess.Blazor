@@ -15,7 +15,7 @@ public class EZInputCheckbox<TValue> : InputBase<TValue?>
     [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
     [Parameter] public string? Id { get; set; }
-    [Parameter] public bool Editable { get; set; }
+    [Parameter] public bool AllowEdit { get; set; }
 
     protected override void OnInitialized()
     {
@@ -48,7 +48,7 @@ public class EZInputCheckbox<TValue> : InputBase<TValue?>
     {
         string cssClass = "form-check-input";
         builder.OpenElement(0, "input");
-        if (!Editable)
+        if (!AllowEdit)
         {
             builder.AddAttribute(1, "readonly");
         }

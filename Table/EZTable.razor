@@ -18,27 +18,29 @@
         {
             <div class="table-responsive h-100" >
                 <table class="table @cssHover table-sm table-head-fixed text-nowrap" style="font-size: 0.80rem">
-                    <thead>
-                        <tr>
-                            <CascadingValue Value="true" Name="IsHeader">
-                                @ChildContent(new TModel())
-                            </CascadingValue>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @*<Virtualize Items="DataList" Context="tuple">*@
-                        @foreach (var tuple in DataList)
-                        {
-                            <tr class="@(DataList.IndexOf(tuple) == currentIndex ? "table-primary" : string.Empty)" @onclick="(() => SelectTuple(tuple, DataList.IndexOf(tuple)))">
-                                <CascadingValue Value="@tuple" Name="DataContext">
-                                    <CascadingValue Value="false" Name="IsHeader">
-                                        @ChildContent(tuple)
-                                    </CascadingValue>
+                    <CascadingValue Value="Recordset?.Fields" Name="FieldInfo">
+                        <thead>
+                            <tr>
+                                <CascadingValue Value="true" Name="IsHeader">
+                                    @ChildContent(new TModel())
                                 </CascadingValue>
                             </tr>
-                        }
-                        @*</Virtualize>*@
-                    </tbody>
+                        </thead>
+                        <tbody>
+                            @*<Virtualize Items="DataList" Context="tuple">*@
+                            @foreach (var tuple in DataList)
+                            {
+                                <tr class="@(DataList.IndexOf(tuple) == currentIndex ? "table-primary" : string.Empty)" @onclick="(() => SelectTuple(tuple, DataList.IndexOf(tuple)))">
+                                    <CascadingValue Value="@tuple" Name="DataContext">
+                                        <CascadingValue Value="false" Name="IsHeader">
+                                            @ChildContent(tuple)
+                                        </CascadingValue>
+                                    </CascadingValue>
+                                </tr>
+                            }
+                            @*</Virtualize>*@
+                        </tbody>
+                    </CascadingValue>
                 </table>        
             </div>
         }
@@ -58,11 +60,28 @@
     protected bool forceRefresh;
     private string cssHover = string.Empty;
 
+    protected override void OnParametersSet()
+    {
+        if (DataList is null && Recordset is null)
+        {
+            throw new InvalidOperationException("The parameters DataList or Recordset need to be supplied.");
+        }
+        if (DataList is not null && Recordset is not null)
+        {
+            throw new InvalidOperationException("The parameters DataList or Recordset need to be supplied. Not both.");
+        }
+        base.OnParametersSet();
+    }
+
     protected override void OnInitialized()
     {
         if (Interactief)
         {
             cssHover = "table-hover";
+        }
+        if (Recordset is null && DataList is not null)
+        {
+            Recordset = new EZRecordset<TModel>(DataList);
         }
         if (Recordset is not null)
         {

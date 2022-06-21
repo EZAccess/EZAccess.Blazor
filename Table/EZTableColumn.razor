@@ -27,6 +27,7 @@ else
 @code {
     [CascadingParameter(Name = "DataContext")] public object? DataContext { get; set; }
     [CascadingParameter(Name = "IsHeader")] public bool IsHeader { get; set; }
+    [CascadingParameter(Name = "FieldInfo")] public Dictionary<string, EZField>? FieldInfo { get; set; }
 
     [Parameter, EditorRequired] public string Field { get; set; } = string.Empty;
     [Parameter] public string? Header { get; set; }
@@ -39,32 +40,26 @@ else
 
     protected override void OnInitialized()
     {
-        Value = string.Empty;
-        EZField field = new(typeof(TModel), Field);
+        EZField field;
+        if (FieldInfo is null)
+        {
+            field = new(typeof(TModel), Field);
+        }
+        else
+        {
+            field = FieldInfo[Field];
+        }
         if (field.PropertyType.IsNumeric() || field.PropertyType.IsDate())
         {
             cssClass = "text-right";
         }
         if (IsHeader) {
-            Header = Header ?? field.Display;
+            Header = Header ?? field.DisplayShortName;
         }
         else
         {
-            if (DataContext != null)
-            {
-                var value = field.Value(DataContext);
-                string? valueString;
-                if (field.DisplayFormat is not null && value is IFormattable)
-                {
-                    var x = (IFormattable)value;
-                    valueString = x.ToString(field.DisplayFormat, null);
-                }
-                else
-                {
-                    valueString = value?.ToString();
-                }
-                Value = valueString ?? string.Empty;
-            }
+            if (DataContext is null) Value = "error";
+            else Value = field.ValueAsString(DataContext);
         }
 
         base.OnInitialized();

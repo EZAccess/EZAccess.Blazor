@@ -15,7 +15,7 @@ public class EZInputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
 {
     [CascadingParameter(Name = "ActionOnFocus")] private Action<bool>? ActionOnFocus { get; set; }
     [Parameter] public string? Id { get; set; }
-    [Parameter] public bool Editable { get; set; }
+    [Parameter] public bool AllowEdit { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class EZInputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     {
         builder.OpenElement(1, "select");
         builder.AddAttribute(2, "autocomplete", "off");
-        if (!Editable)
+        if (!AllowEdit)
         {
             builder.AddAttribute(3, "readonly");
         }

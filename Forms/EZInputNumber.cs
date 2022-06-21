@@ -42,7 +42,7 @@ public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     /// Gets or sets the error message used when displaying an a parsing error.
     /// </summary>
     [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
-    [Parameter] public bool Editable { get; set; }
+    [Parameter] public bool AllowEdit { get; set; }
     [Parameter] public Expression<Func<TValue?>>? ValueExpressionOverwrite { get; set; }
     [Parameter] public string? Id { get; set; }
 
@@ -59,7 +59,7 @@ public class EZInputNumber<[DynamicallyAccessedMembers(DynamicallyAccessedMember
     {
         builder.OpenElement(1, "input");
         builder.AddAttribute(2, "autocomplete", "off");
-        if (!Editable)
+        if (!AllowEdit)
         {
             builder.AddAttribute(3, "readonly");
         }

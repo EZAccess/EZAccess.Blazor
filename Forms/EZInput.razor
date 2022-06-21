@@ -8,26 +8,26 @@
         @switch (elementType)
         {
             case "number":
-                <EZInputNumber @ref="inputNumber" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+                <EZInputNumber @ref="inputNumber" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" />
                 break;
             case "date":
-                <EZInputDate @ref="inputDate" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+                <EZInputDate @ref="inputDate" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" />
                 break;
             case "checkbox":
-                <EZInputCheckbox @ref="inputCheckbox" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+                <EZInputCheckbox @ref="inputCheckbox" @bind-Value="BoundValue" ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" />
                 break;
             case "enum":
-                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" >
+                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" >
                     <EZInputOptionsEnum EnumType="@typeof(TValue)" />
                 </EZInputSelect>
                 break;
             case "select":
-                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" >
+                <EZInputSelect @ref="inputSelect" @bind-Value="BoundValue" style="padding-left: 0.25rem" ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" >
                     @ChildContent
                 </EZInputSelect>
                 break;
             default:
-                <EZInputText @ref="inputText" @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" Editable="@(Editable ?? true)" />
+                <EZInputText @ref="inputText" @bind-Value="BoundValue"  ValueExpressionOverwrite="ValueExpression" Id="@Id" AllowEdit="@(AllowEdit ?? true)" />
                 break;
         }
     </InputGroup>
@@ -54,7 +54,7 @@ else {
 
     // Parameters to overrule default values
     [Parameter] public string? Label { get; set; }
-    [Parameter] public bool? Editable { get; set; }
+    [Parameter] public bool? AllowEdit { get; set; }
     [Parameter] public string? Field { get; set; }
     [Parameter] public bool FirstFocus { get; set; }
     // helper fields
@@ -88,8 +88,8 @@ else {
             fieldName = FieldIdentifier.Create(ValueExpression).FieldName;        
         }
         EZField field = new(CascadedEditContext.Model.GetType(), fieldName);
-        Label =  Label ?? field.Display;
-        Editable = ValueChanged.HasDelegate ? Editable ?? field.Editable : false;
+        Label =  Label ?? field.DisplayName;
+        AllowEdit = ValueChanged.HasDelegate ? AllowEdit ?? field.AllowEdit : false;
         targetType = typeof(TValue);
         Id = field.FieldName;
         // when the childcontent is not null asume the content should be displayed as 
