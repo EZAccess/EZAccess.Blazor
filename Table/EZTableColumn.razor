@@ -3,13 +3,20 @@
 
 @if (IsHeader)
 {
-    <th class="">@Header</th>
+    <th class="@cssClass">@Header</th>
 }
 else
 {
-    <td class="">
-        @if (ChildContent == null) {
-            @Value
+    <td class="@cssClass">
+        @if (ChildContent is null) {
+            if (Hyperlink is null)
+            {
+                @Value
+            }
+            else
+            {
+                <a href="@(String.Format(Hyperlink, @Value))">@Value</a>
+            }
         }
         else {
             @ChildContent
@@ -24,14 +31,20 @@ else
     [Parameter, EditorRequired] public string Field { get; set; } = string.Empty;
     [Parameter] public string? Header { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Hyperlink { get; set; }
 
     protected string Value { get; set; } = string.Empty;
     protected string? header;
+    private string? cssClass;
 
     protected override void OnInitialized()
     {
         Value = string.Empty;
         EZField field = new(typeof(TModel), Field);
+        if (field.PropertyType.IsNumeric() || field.PropertyType.IsDate())
+        {
+            cssClass = "text-right";
+        }
         if (IsHeader) {
             Header = Header ?? field.Display;
         }
@@ -39,12 +52,18 @@ else
         {
             if (DataContext != null)
             {
-                PropertyInfo? fieldData = DataContext.GetType().GetProperty(Field);
-                if (fieldData != null) {
-                    var value = fieldData.GetValue(DataContext);
-                    object value2 = value ?? string.Empty;
-                    Value = value2.ToString() ?? string.Empty;
+                var value = field.Value(DataContext);
+                string? valueString;
+                if (field.DisplayFormat is not null && value is IFormattable)
+                {
+                    var x = (IFormattable)value;
+                    valueString = x.ToString(field.DisplayFormat, null);
                 }
+                else
+                {
+                    valueString = value?.ToString();
+                }
+                Value = valueString ?? string.Empty;
             }
         }
 

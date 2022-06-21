@@ -1,5 +1,6 @@
 ﻿@typeparam TModel where TModel: new()
 @attribute [CascadingTypeParameter(nameof(TModel))]
+@implements IDisposable
 
 @if (!forceRefresh)
 {
@@ -16,7 +17,7 @@
         else
         {
             <div class="table-responsive h-100" >
-                <table class="table @cssHover table-head-fixed text-nowrap">
+                <table class="table @cssHover table-sm table-head-fixed text-nowrap" style="font-size: 0.80rem">
                     <thead>
                         <tr>
                             <CascadingValue Value="true" Name="IsHeader">
@@ -47,6 +48,7 @@
 
 @code {
     [Parameter] public List<TModel>? DataList { get; set; }
+    [Parameter] public EZRecordset<TModel>? Recordset { get; set; }
     [Parameter, EditorRequired] public RenderFragment<TModel>? ChildContent { get; set; }
     [Parameter] public EventCallback<TModel> SelectionChanged { get; set; }
     [Parameter] public bool Interactief { get; set; } = true;
@@ -62,6 +64,11 @@
         {
             cssHover = "table-hover";
         }
+        if (Recordset is not null)
+        {
+            Recordset.AddOnChangeListeners(OnChange);
+        }
+        OnChange(this);
         base.OnInitialized();
     }
 
@@ -83,4 +90,23 @@
         forceRefresh = false;
         StateHasChanged();
     }
+
+    public void OnChange(object sender)
+    {
+        if (Recordset is not null)
+        {
+            DataList = Recordset.Data;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (Recordset is not null)
+        {
+            Recordset.RemoveOnChangeListeners(OnChange);
+        }
+    }
+
+
 }

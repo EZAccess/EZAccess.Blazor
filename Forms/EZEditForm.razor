@@ -1,7 +1,6 @@
 ﻿@implements IDisposable
-@attribute [CascadingTypeParameter(nameof(TModel))]
 @typeparam TModel where TModel : new()
-
+@attribute [CascadingTypeParameter(nameof(TModel))]
 
 @if(Recordset == null)
 {
