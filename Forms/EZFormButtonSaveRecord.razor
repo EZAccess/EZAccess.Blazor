@@ -1,0 +1,78 @@
+﻿@implements IDisposable
+@typeparam TModel where TModel : new()
+
+<div class="d-flex justify-content-center">
+    <div class="p-3">
+        <button class="btn @_btnColor btn-sm rounded-pill" @onclick="SaveRecord" >
+            <span class="mr-1">Save @_modelName</span>
+            <i class="fa fa-cloud-upload-alt"></i>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
+    private string _modelName = string.Empty;
+    private string _btnColor = "btn-secondary";
+    private bool _disabled = true;
+    private bool _validationErrors = false;
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (Recordset == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a {nameof(Recordset)} parameter!");
+        }
+        string __fullName = typeof(TModel).FullName ?? string.Empty;
+        string __namespace = typeof(TModel).Namespace ?? string.Empty;
+        _modelName = __fullName
+                            .Replace(__namespace, string.Empty)
+                            .Replace(".", string.Empty);
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected override void OnParametersSet()
+    {
+        Recordset?.AddOnChangeListeners(RefreshFooter);
+        base.OnParametersSet();
+    }
+
+    public void RefreshFooter(object sender)
+    {
+        _disabled = true;
+        if (Recordset is not null)
+        {
+            if (Recordset.CurrentRecord is not null)
+            {
+                _disabled = !(Recordset.AllowUpdate && Recordset.CurrentRecord.IsChanged && !Recordset.CurrentRecord.HasValidationErrors);
+                _validationErrors = Recordset.CurrentRecord.HasValidationErrors;
+            }
+        }
+        if (_disabled && !_validationErrors)
+        {
+            _btnColor = "btn-secondary";
+        }
+        else if (_disabled && _validationErrors)
+        {
+            _btnColor = "btn-danger";
+        }
+        else
+        {
+            _btnColor = "btn-success";
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Recordset?.RemoveOnChangeListeners(RefreshFooter);
+    }
+
+    public void SaveRecord()
+    {
+        if (!_disabled)
+        {
+            Recordset?.CurrentRecord?.SaveChanges();
+        }
+    }
+}

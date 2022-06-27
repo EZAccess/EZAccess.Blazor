@@ -1,11 +1,10 @@
 ﻿@implements IDisposable
-@attribute [CascadingTypeParameter(nameof(TModel))]
 @typeparam TModel where TModel : new()
 
 <div class="d-flex justify-content-center">
     <div class="p-3">
-        <button class="btn btn-info btn-sm rounded-pill" @onclick="AddNewRecord">
-            <span class="mr-1">Create new @_modelName</span>
+        <button class="btn @_btnColor btn-sm rounded-pill" @onclick="SaveAndCreateNewRecord" >
+            <span class="mr-1">@_label @_modelName</span>
             <i class="fa fa-plus"></i>
         </button>
     </div>
@@ -14,7 +13,9 @@
 @code {
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
     private string _modelName = string.Empty;
-
+    private string _btnColor = "btn-info";
+    private bool _allowSave = true;
+    private string _label = "Create new";
     public override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
@@ -38,6 +39,27 @@
 
     public void RefreshFooter(object sender)
     {
+        _allowSave = false;
+        if (Recordset is not null)
+        {
+            if (Recordset.CurrentRecord is not null)
+            {
+                if (Recordset.AllowUpdate && Recordset.CurrentRecord.IsChanged && !Recordset.CurrentRecord.HasValidationErrors)
+                {
+                    _allowSave = true;
+                }
+            }
+        }
+        if (_allowSave)
+        {
+            _label = "Save & Create new";
+            _btnColor = "btn-success";
+        }
+        else
+        {
+            _label = "Create new";
+            _btnColor = "btn-info";
+        }
         InvokeAsync(StateHasChanged);
     }
 
@@ -46,8 +68,12 @@
         Recordset?.RemoveOnChangeListeners(RefreshFooter);
     }
 
-    public void AddNewRecord()
+    public void SaveAndCreateNewRecord()
     {
+        if (_allowSave)
+        {
+            Recordset?.CurrentRecord?.SaveChanges();
+        }
         Recordset?.FocusOrAddNewRecord();
     }
 }

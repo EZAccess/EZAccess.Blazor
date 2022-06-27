@@ -42,7 +42,14 @@
                             <span>Insert record</span>
                         </button>
                     }
-                    @if (_showOptions)
+                    @if (_showDeleteButton)
+                    {
+                        <button class="btn btn-default" @onclick="DeleteRecord">
+                            <i class="fas fa-trash text-danger mr-1" />
+                            <span>Delete record</span>
+                        </button>
+                    }
+@*                    @if (_showOptions)
                     {
                         <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             <i class="fa fa-cog"></i>
@@ -57,28 +64,29 @@
                                 </div>
                             </div>
                         </div>
-                    }
+                    }*@
                 </div>
             </div>
-        
-            <!--
-            <div class="d-inline-flex">
-                <div class="input-group mr-3">
-                    <input type="search" class="form-control" style="width: 7rem;" placeholder="Goto record">
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-default">
-                            <i class="fas fa-search"></i>
-                        </button>
+
+            @if (_showOptions)
+            {
+                <div class="d-inline-flex">
+                    <div class="input-group mr-3">
+                        <div class="form-group mb-0">
+                            <div class="custom-control custom-switch form-control-sm">
+                                <input class="custom-control-input" type="checkbox" id="@($"AutoSaveCheckbox{this.GetHashCode}")" @bind-value="@(Recordset.SaveChangesAutomatic)">
+                                <label class="custom-control-label form-check-label" for="@($"AutoSaveCheckbox{this.GetHashCode}")" >Autosave</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            -->
+            }
 
-            <div class="d-inline-flex">
+@*            <div class="d-inline-flex">
                 <div class="input-group mr-3 w-100">
                     <input type="text" readonly class="form-control-plaintext" value="@Recordset.ErrorMessage">
                 </div>
-            </div>
+            </div>*@
 
         }
     </div>
@@ -88,11 +96,13 @@
     [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
     [Parameter] public bool? ShowUploadButton { get; set; }
     [Parameter] public bool? ShowInsertButton { get; set; }
+    [Parameter] public bool? ShowDeleteButton { get; set; }
     [Parameter] public bool? ShowOptions { get; set; }
     [Parameter] public string CssClass { get; set; } = string.Empty;
 
     private bool _showUploadButton;
     private bool _showInsertButton;
+    private bool _showDeleteButton;
     private bool _showOptions;
 
     public override Task SetParametersAsync(ParameterView parameters)
@@ -104,6 +114,7 @@
         }
         _showUploadButton = !Recordset.AllowUpdate ? false: ShowUploadButton ?? true;
         _showInsertButton = !Recordset.AllowCreate ? false: ShowInsertButton ?? true;
+        _showDeleteButton = !Recordset.AllowDelete ? false: ShowDeleteButton ?? true;
         _showOptions = !Recordset.AllowUpdate ? false: ShowOptions ?? true;
         return base.SetParametersAsync(ParameterView.Empty);
     }
@@ -116,6 +127,14 @@
     private void InsertRecord()
     {
         Recordset?.FocusOrAddNewRecord();
+    }
+
+    private void DeleteRecord()
+    {
+        if (!Recordset?.CurrentRecord?.IsNewRecord ?? false)
+        {
+            Recordset?.CurrentRecord?.RequestDelete();
+        }
     }
 
     private void RefreshData()

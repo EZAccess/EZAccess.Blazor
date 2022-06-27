@@ -1,0 +1,52 @@
+﻿@implements IDisposable
+@typeparam TModel where TModel : new()
+
+<div class="d-flex justify-content-center">
+    <div class="p-3">
+        <button class="btn btn-info btn-sm rounded-pill" @onclick="AddNewRecord">
+            <span class="mr-1">Create new @_modelName</span>
+            <i class="fa fa-plus"></i>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public EZRecordset<TModel>? Recordset { get; set; }
+    private string _modelName = string.Empty;
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (Recordset == null)
+        {
+            throw new InvalidOperationException($"{GetType()} requires a {nameof(Recordset)} parameter!");
+        }
+        string __fullName = typeof(TModel).FullName ?? string.Empty;
+        string __namespace = typeof(TModel).Namespace ?? string.Empty;
+        _modelName = __fullName
+                            .Replace(__namespace, string.Empty)
+                            .Replace(".", string.Empty);
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected override void OnParametersSet()
+    {
+        Recordset?.AddOnChangeListeners(RefreshFooter);
+        base.OnParametersSet();
+    }
+
+    public void RefreshFooter(object sender)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Recordset?.RemoveOnChangeListeners(RefreshFooter);
+    }
+
+    public void AddNewRecord()
+    {
+        Recordset?.FocusOrAddNewRecord();
+    }
+}
