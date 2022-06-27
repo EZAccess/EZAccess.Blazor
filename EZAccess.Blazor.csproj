@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Authors>Gideon ter Maat</Authors>
     <Company>EZAccess.nl</Company>
     <Description>Library with essential Blazor component for editing data, such as an enhanced EditForm and Datagrid for editing data.</Description>
@@ -26,10 +26,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.5" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
