@@ -70,7 +70,7 @@
 
     public void SaveAndCreateNewRecord()
     {
-        scanif (_allowSave)
+        if (_allowSave)
         {
             Recordset?.CurrentRecord?.SaveChanges();
         }
